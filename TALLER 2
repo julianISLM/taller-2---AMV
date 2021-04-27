@@ -1,0 +1,274 @@
+# paquetes y limpiando el ambiente ----------------------------------------
+
+rm(list = ls())
+
+library(dplyr)
+library(readxl)
+library("FactoMineR")
+library("factoextra")
+library(MASS)
+library(heplots)
+library(ICSNP)
+
+# capitulo 1 ---------------------------------------------------------------
+
+#1.1.
+x1 <- c(3,4,2,6,8,2,5)
+x2 <- c(5,5.5,4,7,10,5,7.5)
+mean(x1)
+mean(x2)
+var(x1)
+var(x2)
+cov(x1,x2)
+cov(cbind(x1,x2))*((7-1)/7)
+cov(cbind(x1,x2))
+#1.3.
+y1 <- c(9,2,6,5,8)
+y2 <- c(12,8,6,4,10)
+y3 <- c(3,4,0,2,1)
+
+apply(cbind(y1,y2,y3),2,mean)
+cov(cbind(y1,y2,y3))*((5-1)/5) # poblacional
+cov(cbind(y1,y2,y3))
+var(y1)
+var(y2)
+var(y3)
+cor(cbind(y1,y2,y3))
+
+
+# capitulo 2 --------------------------------------------------------------
+
+#2.5
+det(matrix(c(5/13,12/13,-12/13,5/13),nrow = 2))
+matrix(c(5/13,12/13,-12/13,5/13),nrow = 2)%*%t(matrix(c(5/13,12/13,-12/13,5/13),nrow = 2))
+
+#2.7
+a <- matrix(c(9,-2,-2,6),nrow = 2)
+eigen(a)
+
+eigen(a)$vectors%*% diag(eigen(a)$values)%*% solve(eigen(a)$vectors)
+
+eigen(solve(a))
+
+
+# capitulo 3 --------------------------------------------------------------
+
+#3.1
+w <- matrix(c(9,1,5,3,1,2),nrow = 3,byrow = T)
+w <- data.frame(w)
+apply(w,2,mean)
+
+ggplot(w,aes(x=X1,y=X2)) + geom_point() +
+  geom_point(aes(x=5, y=2), colour="blue",size=3) +theme_bw()
+
+
+cov(w)
+cor(w)
+
+
+#3.6
+x <- matrix(c(-1,3,-2,2,4,2,5,2,3),nrow = 3,byrow = T)
+apply(x,2,mean)
+rep(1,3)
+
+x- (rep(1,3)%*%t(apply(x,2,mean)))
+
+cov(x)
+det(cov(x))
+solve(cov(x))
+
+
+# capitulo 5 --------------------------------------------------------------
+
+#5.1
+y <- c(2,8,6,8)
+y1 <- c(12,9,9,10)
+
+ex_1 <- data.frame(cbind(y,y1))
+colMeans(ex_1)
+
+HotellingsT2(ex_1, mu = c(7,11),test = "f")
+
+#b
+t2 <- 4*t(c(6-7,10-11)) %*% solve(cov(ex_1)) %*% c(6-7,10-11)
+F0 <- ((4-2)/2)*(t2/(4-1))
+
+F0 > qf(0.05,2,4-2) # SE RECHAZA HIPOTESIS NULA SI ESTO SE CUMPLE
+1- pf(F0,2,4-2)
+
+#5.8
+42*t(c(.564-0.55,0.603-0.60)) %*% solve(matrix(c(0.0144,0.0117,0.0117,0.0146),nrow =2)) %*% c(.564-0.55,0.603-0.60)
+
+
+# capitulo 8 --------------------------------------------------------------
+
+#8.12
+cap8<- read_excel("C:/Users/user/Desktop/Especialización/AMV/tablas taller 3.xlsx",sheet = 3)
+
+cov(cap8)
+cor(cap8)
+
+eigen(cov(cap8))
+eigen(cor(cap8))
+pca2 <- princomp(cap8,cor = T)
+fviz_eig(pca2,addlabels = T) + ylim(0,50)
+
+pca2[["loadings"]]
+
+fviz_contrib(PCA(cap8), choice = "var", axes = 1, top = 10)
+fviz_contrib(PCA(cap8), choice = "var", axes = 2, top = 10)
+fviz_contrib(PCA(cap8), choice = "var", axes = 3, top = 10)
+PCA(cap8,scale.unit = T)$var
+
+#8.17
+cap8_2<- read_excel("C:/Users/user/Desktop/Especialización/AMV/tablas taller 3.xlsx",sheet = 5)
+
+eigen(cov(cap8_2))
+
+fviz_eig(princomp(cap8_2,cor = F),addlabels = T) + ylim(0,90)
+
+fviz_pca_var(princomp(cap8_2,cor = F))
+
+
+
+# ejercicios del libro de diaz --------------------------------------------
+
+
+# capitulo 11 -------------------------------------------------------------
+
+#ejercicio 1
+
+lenguaje <- c(6,8,5,7,9)
+edad <-     c(5,7,6,8,9)
+data<- cbind(lenguaje,edad)
+
+mean(lenguaje)
+mean(edad)
+var(lenguaje)
+var(edad)
+
+
+data <- scale(data)
+sqrt((7-5)^2+(8-6)^2)
+
+d   <- dist(data, method = "euclidean")
+
+vnearest <- hclust(d, method = "single" ) #vecino mas cercano
+plot(vnearest)
+
+vfar <- hclust(d, method = "complete" ) #vecino mas lejano
+plot(vfar)
+
+avera <- hclust(d, method = "average" ) #promedio
+plot(avera)
+
+ward <- hclust(d, method = "ward.D" ) #wrd
+plot(ward)
+
+
+plot(hclust(dist(data, method = "euclidean"), method = "single" ))
+plot(hclust(dist(data, method = "maximum"), method = "single" ))
+plot(hclust(dist(data, method = "manhattan"), method = "single" ))
+plot(hclust(dist(data, method = "canberra"), method = "single" ))
+plot(hclust(dist(data, method = "minkowski"), method = "single" ))
+
+#ejercicio 5
+ex_5 <- read.table("pizza.txt",header = T)
+ex_5 <- na.omit(ex_5)
+
+set.seed(341278)
+
+sample <-ex_5[sample(nrow(ex_5), 76),]
+
+info <- data.frame(scale(sample[,-c(1,9)]))
+
+
+ddist <- dist(info,method = "euclidean")
+
+plot(hclust(ddist, method = "average"),hang = -1)
+abline(h=2,lty = 2)
+
+
+# capitulo 12 -------------------------------------------------------------
+
+# ejercicio 3
+ex_1 <- read_excel("C:/Users/user/Desktop/Especialización/AMV/tablas taller.xlsx",
+                   sheet = 12)
+
+boxM(ex_1[,-4],group = ex_1$x4)
+
+
+ex_1$x4<-factor(ex_1$x4)
+lda3 <-lda(x4 ~X1 + X2+ X3,ex_1)
+lda3
+
+clasif<-predict(lda3,ex_1[,-4])$class
+addmargins(table(ex_1$x4,clasif)) 
+
+
+qda3 <-qda(x4 ~X1 + X2+ X3,ex_1)
+qda3
+clasif<-predict(qda3,ex_1[,-4])$class
+addmargins(table(ex_1$x4,clasif)) 
+
+newx <- c(X1 = 26.71,X2 = 17.04,X3 = 5.73)
+
+
+lda3
+con <- ex_1 %>% mutate(linear = t(t(b)%*%t(ex_1[-4])),
+                       const = t(b)%*%xc,
+                       con = linear >= const)
+
+t(b)%*%t(ex_1[1,-4])
+predict(lda3,newdata = data.frame(t(newx)))$class
+predict(qda3,newdata = data.frame(t(newx)))$class
+
+# ejercicio 5
+data(UScereal)
+table(UScereal$mfr)
+UScereal <- UScereal %>% dplyr::select(-potassium,-vitamins)
+str(UScereal)
+levels(UScereal$mfr) <- c("G","K","S","S","S","S")
+table(UScereal$mfr)
+newx <- c(calories = 149.41,protein = 3.68,fat = 1.42, sodium = 237.84,fibre = 3.87,
+          carbo = 19.97,sugars = 10.05,shelf = 2.17)
+
+# prueba de homogeneidad de matrices
+boxM(UScereal[,-1],group = UScereal$mfr)
+
+#cuadratica
+qda5 <-qda(mfr~.,UScereal)
+qda5
+predict(qda5,newdata = data.frame(t(newx)))
+
+
+#lineal con probablidades iguales
+predict(lda(mfr~.,UScereal,prior = rep(1/3,3)),newdata = data.frame(t(newx)))$class
+
+#lineal con probablidades por numero de observaciones
+predict(lda(mfr~.,UScereal,prior = c(22/65,21/65,22/65)),newdata = data.frame(t(newx)))$class
+
+UScereal %>% filter(mfr == "S") %>% dplyr::select(-mfr) %>% cov() %>% diag() %>% sum()
+UScereal %>% filter(mfr == "G") %>% dplyr::select(-mfr) %>% cov() %>% diag() %>% sum()
+UScereal %>% filter(mfr == "K") %>% dplyr::select(-mfr) %>% cov() %>% diag() %>% sum()
+
+#cuadratica con todas iguales
+predict(qda(mfr~.,UScereal,prior = rep(1/3,3)),newdata = data.frame(t(newx)))$class
+
+#lineal con probablidades por numero de observaciones
+predict(qda(mfr~.,UScereal,prior = c(22/65,21/65,22/65)),newdata = data.frame(t(newx)))$class
+
+
+# error de resustitucion 
+predict(lda(mfr~.,UScereal),UScereal[,-1])$class
+addmargins(table(UScereal$mfr,predict(lda(mfr~.,UScereal),UScereal[,-1])$class)) #tabla de errores
+
+
+# error por validacion cruzada.
+clasifq<-numeric(nrow(UScereal))
+for(i in 1:nrow(UScereal)){
+  zq<-lda(mfr~.,UScereal[-i,])
+  clasifq[i]<-as.numeric(predict(zq,UScereal[i,-1])$class)
+}
+tabla<-table(UScereal$mfr,clasifq)
+addmargins(tabla)
